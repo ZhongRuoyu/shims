@@ -57,6 +57,13 @@ exec() {
 load_local_profiles() {
     unset -f load_local_profiles
     local local_profile
+    if [[ -d "$SHIMS_LOCAL_PROFILES_PATH" ]]; then
+        for local_profile in "$(ls "$SHIMS_LOCAL_PROFILES_PATH")"; do
+            if [[ -n "$local_profile" ]]; then
+                source "$SHIMS_LOCAL_PROFILES_PATH/$local_profile"
+            fi
+        done
+    fi
     if [[ -d "$shims_dir/common/local" ]]; then
         for local_profile in "$(ls "$shims_dir/common/local")"; do
             if [[ -n "$local_profile" ]]; then
