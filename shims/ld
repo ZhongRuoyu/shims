@@ -6,7 +6,7 @@ if [[ -n "$LD" ]]; then
     ld="$LD"
 else
     if [[ "$(uname -s)" = Darwin ]]; then
-        ld="ld64.mold"
+        ld="ld"
     else
         ld="ld.mold"
     fi
