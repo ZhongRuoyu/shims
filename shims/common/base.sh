@@ -34,13 +34,22 @@ echo() {
 }
 
 exec() {
-    if [[ "$(command -v "$1")" -ef "$shim_realpath" ]]; then
+    local exe="$(command -v "$1")"
+    if [[ -n "$exe" && "$exe" -ef "$shim_realpath" ]]; then
+        local saved_path="$PATH"
         path_remove "$shims_dir"
+        exe="$(command -v "$1")"
+        export PATH="$saved_path"
     fi
+    if [[ -z "$exe" ]]; then
+        echo "command not found: $1" >&2
+        exit 1
+    fi
+    shift
     if [[ -n "$SHIMS_DEBUG" ]]; then
-        echo "$@" >&2
+        echo "$exe" "$@" >&2
     fi
-    builtin exec "$@"
+    builtin exec "$exe" "$@"
 }
 
 load_local_profiles() {
