@@ -25,17 +25,6 @@ fi
 
 brew_prefix="$(brew --prefix)"
 
-export PATH=""
-export PATH="${PATH:+$PATH:}$shims_dir"
-export PATH="${PATH:+$PATH:}$brew_prefix/bin"
-export PATH="${PATH:+$PATH:}$brew_prefix/opt/binutils/bin"
-export PATH="${PATH:+$PATH:}/usr/local/bin"
-export PATH="${PATH:+$PATH:}/usr/local/sbin"
-export PATH="${PATH:+$PATH:}/usr/bin"
-export PATH="${PATH:+$PATH:}/bin"
-export PATH="${PATH:+$PATH:}/usr/sbin"
-export PATH="${PATH:+$PATH:}/sbin"
-
 echo() {
     if [[ -t 1 ]]; then
         builtin echo $'\033[0;37m'"$@"$'\033[0m'
