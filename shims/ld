@@ -1,15 +1,16 @@
 #!/bin/bash
 
+# shellcheck source=/dev/null
 source "$(dirname "$0")/common/base.sh"
 
 if [[ -n "$LD" ]]; then
-    ld="$LD"
+  ld="$LD"
 else
-    if [[ "$(uname -s)" = Darwin ]]; then
-        ld="ld"
-    else
-        ld="ld.mold"
-    fi
+  if [[ "$(uname -s)" = Darwin ]]; then
+    ld="ld"
+  else
+    ld="ld.mold"
+  fi
 fi
 
 exec "$ld" "$@"

@@ -1,5 +1,6 @@
 #!/bin/bash
 
+# shellcheck source=/dev/null
 source "$(dirname "$0")/common/base.sh"
 
 exec "$SHELL" "$@"

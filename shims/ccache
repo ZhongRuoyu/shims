@@ -1,9 +1,12 @@
 #!/bin/bash
 
+# shellcheck source=/dev/null
 source "$(dirname "$0")/common/base.sh"
 
-while [[ "$(basename -- "$1")" = "$shim_basename" ]]; do
-    shift
+brew_prefix="$(brew --prefix)"
+
+while [[ "$(basename -- "$1")" = "${shim_basename:?}" ]]; do
+  shift
 done
 
 exec "$brew_prefix/opt/ccache/bin/ccache" "$@"

@@ -1,57 +1,60 @@
 #!/bin/bash
 
+# shellcheck source=/dev/null
 source "$(dirname "$0")/common/base.sh"
 
+brew_prefix="$(brew --prefix)"
+
 get_version_suffix() {
-    builtin echo "$1" | sed -En 's/^.*-(.*)/\1/p'
+  builtin echo "$1" | sed -En 's/^.*-(.*)/\1/p'
 }
 
 remove_version_suffix() {
-    if [[ -n "$(get_version_suffix "$1")" ]]; then
-        builtin echo "$1" | sed -En 's/^(.*)-.*/\1/p'
-    else
-        builtin echo "$1"
-    fi
+  if [[ -n "$(get_version_suffix "$1")" ]]; then
+    builtin echo "$1" | sed -En 's/^(.*)-.*/\1/p'
+  else
+    builtin echo "$1"
+  fi
 }
 
-if builtin echo "$shim_basename" | grep -Eq '(c|g|clang)\+\+'; then
-    cc="c++"
-    cc_variable="CXX"
-    cc_fallback_basename="clang++"
+if builtin echo "${shim_basename:?}" | grep -Eq '(c|g|clang)\+\+'; then
+  cc="c++"
+  cc_variable="CXX"
+  cc_fallback_basename="clang++"
 else
-    cc="cc"
-    cc_variable="CC"
-    cc_fallback_basename="clang"
+  cc="cc"
+  cc_variable="CC"
+  cc_fallback_basename="clang"
 fi
 
 cc_noversion="$(remove_version_suffix "$shim_basename")"
 cc_version="$(get_version_suffix "$shim_basename")"
 if [[ -z "$cc_noversion" ]] || [[ "$cc_noversion" = "$cc" ]]; then
-    cc_noversion="$(remove_version_suffix "$(basename "${!cc_variable}")")"
-    cc_version="$(get_version_suffix "$(basename "${!cc_variable}")")"
+  cc_noversion="$(remove_version_suffix "$(basename "${!cc_variable}")")"
+  cc_version="$(get_version_suffix "$(basename "${!cc_variable}")")"
 fi
 if [[ -z "$cc_noversion" ]] || [[ "$cc_noversion" = "$cc" ]]; then
-    cc_noversion="$cc_fallback_basename"
-    cc_version=""
+  cc_noversion="$cc_fallback_basename"
+  cc_version=""
 fi
 
 if [[ "$cc_noversion" = "clang" ]] || [[ "$cc_noversion" = "clang++" ]]; then
-    cc_version="${cc_version:-15}"
-    cc_prefix="$brew_prefix/opt/llvm@$cc_version"
-    cc_basename="$cc_noversion"
+  cc_version="${cc_version:-15}"
+  cc_prefix="$brew_prefix/opt/llvm@$cc_version"
+  cc_basename="$cc_noversion"
 elif [[ "$cc_noversion" = "gcc" ]] || [[ "$cc_noversion" = "g++" ]]; then
-    cc_version="${cc_version:-12}"
-    cc_prefix="$brew_prefix/opt/gcc@$cc_version"
-    cc_basename="$cc_noversion-$cc_version"
+  cc_version="${cc_version:-12}"
+  cc_prefix="$brew_prefix/opt/gcc@$cc_version"
+  cc_basename="$cc_noversion-$cc_version"
 else
-    cc_prefix=""
-    cc_basename="$cc_noversion"
+  cc_prefix=""
+  cc_basename="$cc_noversion"
 fi
 
 if [[ -z "$NO_CCACHE" ]]; then
-    ccache="$brew_prefix/opt/ccache/bin/ccache"
+  ccache="$brew_prefix/opt/ccache/bin/ccache"
 else
-    ccache=""
+  ccache=""
 fi
 
 exec $ccache "${cc_prefix:+$cc_prefix/bin/}$cc_basename" "$@"
