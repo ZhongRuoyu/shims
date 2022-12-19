@@ -56,18 +56,14 @@ load_local_profiles() {
   local local_profile
   if [[ -d "$SHIMS_LOCAL_PROFILES_PATH" ]]; then
     for local_profile in "$SHIMS_LOCAL_PROFILES_PATH"/*; do
-      if [[ -n "$local_profile" ]]; then
-        # shellcheck source=/dev/null
-        source "$SHIMS_LOCAL_PROFILES_PATH/$local_profile"
-      fi
+      # shellcheck source=/dev/null
+      source "$local_profile"
     done
   fi
   if [[ -d "$shims_dir/common/local" ]]; then
     for local_profile in "$shims_dir/common/local"/*; do
-      if [[ -n "$local_profile" ]]; then
-        # shellcheck source=/dev/null
-        source "$shims_dir/common/local/$local_profile"
-      fi
+      # shellcheck source=/dev/null
+      source "$local_profile"
     done
   fi
 }
