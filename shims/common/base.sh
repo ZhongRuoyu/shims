@@ -53,6 +53,9 @@ exec() {
 
 load_local_profiles() {
   unset -f load_local_profiles
+  local saved_nullglob
+  saved_nullglob="$(shopt -p nullglob)"
+  shopt -s nullglob
   local local_profile
   if [[ -d "$SHIMS_LOCAL_PROFILES_PATH" ]]; then
     for local_profile in "$SHIMS_LOCAL_PROFILES_PATH"/*; do
@@ -66,5 +69,6 @@ load_local_profiles() {
       source "$local_profile"
     done
   fi
+  eval "$saved_nullglob"
 }
 load_local_profiles
