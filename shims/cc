@@ -43,7 +43,7 @@ if [[ "$cc_noversion" = "clang" ]] || [[ "$cc_noversion" = "clang++" ]]; then
   cc_prefix="$brew_prefix/opt/llvm@$cc_version"
   cc_basename="$cc_noversion"
 elif [[ "$cc_noversion" = "gcc" ]] || [[ "$cc_noversion" = "g++" ]]; then
-  cc_version="${cc_version:-12}"
+  cc_version="${cc_version:-13}"
   cc_prefix="$brew_prefix/opt/gcc@$cc_version"
   cc_basename="$cc_noversion-$cc_version"
 else
