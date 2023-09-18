@@ -31,15 +31,21 @@ echo() {
   fi
 }
 
-exec() {
+which() {
   local exe
   exe="$(command -v "$1")"
-  if [[ -n "$exe" && "$exe" -ef "$shim_realpath" ]]; then
+  if [[ -n "$exe" ]] && [[ "$exe" -ef "$shim_realpath" ]]; then
     local saved_path="$PATH"
     path_remove "$shims_dir"
     exe="$(command -v "$1")"
     export PATH="$saved_path"
   fi
+  builtin echo "$exe"
+}
+
+exec() {
+  local exe
+  exe="$(which "$1")"
   if [[ -z "$exe" ]]; then
     echo "command not found: $1" >&2
     exit 1
