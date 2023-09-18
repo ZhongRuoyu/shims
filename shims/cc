@@ -17,44 +17,64 @@ remove_version_suffix() {
   fi
 }
 
-if builtin echo "${shim_basename:?}" | grep -Eq '(c|g|clang)\+\+'; then
+if builtin echo "${shim_basename:?}" | grep -Eq '^(c|g|clang)\+\+'; then
   cc="c++"
   cc_variable="CXX"
-  cc_fallback_basename="clang++"
+  cc_variable_fallback="clang++"
 else
   cc="cc"
   cc_variable="CC"
-  cc_fallback_basename="clang"
-fi
-
-cc_noversion="$(remove_version_suffix "$shim_basename")"
-cc_version="$(get_version_suffix "$shim_basename")"
-if [[ -z "$cc_noversion" ]] || [[ "$cc_noversion" = "$cc" ]]; then
-  cc_noversion="$(remove_version_suffix "$(basename "${!cc_variable}")")"
-  cc_version="$(get_version_suffix "$(basename "${!cc_variable}")")"
-fi
-if [[ -z "$cc_noversion" ]] || [[ "$cc_noversion" = "$cc" ]]; then
-  cc_noversion="$cc_fallback_basename"
-  cc_version=""
-fi
-
-if [[ "$cc_noversion" = "clang" ]] || [[ "$cc_noversion" = "clang++" ]]; then
-  cc_version="${cc_version:-16}"
-  cc_prefix="$brew_prefix/opt/llvm@$cc_version"
-  cc_basename="$cc_noversion"
-elif [[ "$cc_noversion" = "gcc" ]] || [[ "$cc_noversion" = "g++" ]]; then
-  cc_version="${cc_version:-13}"
-  cc_prefix="$brew_prefix/opt/gcc@$cc_version"
-  cc_basename="$cc_noversion-$cc_version"
-else
-  cc_prefix=""
-  cc_basename="$cc_noversion"
+  cc_variable_fallback="clang"
 fi
 
 if [[ -z "$NO_CCACHE" ]]; then
-  ccache="$brew_prefix/opt/ccache/bin/ccache"
+  ccache="$(which ccache)"
 else
   ccache=""
 fi
 
-exec $ccache "${cc_prefix:+$cc_prefix/bin/}$cc_basename" "$@"
+if [[ -n "${!cc_variable}" ]] && echo "${!cc_variable}" | grep -Eq '^/'; then
+  exec $ccache "${!cc_variable}" "$@"
+fi
+
+if [[ -z "${!cc_variable}" ]]; then
+  export "$cc_variable"="$cc_variable_fallback"
+fi
+
+cc_variable_version_suffix="$(get_version_suffix ${!cc_variable})"
+cc_variable_noversion="$(remove_version_suffix ${!cc_variable})"
+
+which_cc="$(which ${!cc_variable})"
+if [[ -n "$which_cc" ]]; then
+  exec $ccache "$which_cc" "$@"
+fi
+
+if [[ "$cc_variable_noversion" = "clang" ]] ||
+  [[ "$cc_variable_noversion" = "clang++" ]]; then
+  if [[ -n "$cc_variable_version_suffix" ]]; then
+    cc_version="$cc_variable_version_suffix"
+  else
+    cc_version="$(
+      find "$brew_prefix/opt" -type l -name "llvm@*" |
+        sed -En 's/.*@(.*)/\1/p' |
+        sort -nr |
+        head -n 1
+    )"
+  fi
+  exec $ccache "$brew_prefix/opt/llvm@$cc_version/bin/$cc_variable_noversion" "$@"
+elif [[ "$cc_variable_noversion" = "gcc" ]] ||
+  [[ "$cc_variable_noversion" = "g++" ]]; then
+  if [[ -n "$cc_variable_version_suffix" ]]; then
+    cc_version="$cc_variable_version_suffix"
+  else
+    cc_version="$(
+      find "$brew_prefix/opt" -type l -name "gcc@*" |
+        sed -En 's/.*@(.*)/\1/p' |
+        sort -nr |
+        head -n 1
+    )"
+  fi
+  exec $ccache "$brew_prefix/opt/gcc@$cc_version/bin/$cc_variable_noversion-$cc_version" "$@"
+else
+  exec $ccache "$cc_variable"
+fi
