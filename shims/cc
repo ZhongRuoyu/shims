@@ -27,6 +27,10 @@ else
   cc_variable_fallback="clang"
 fi
 
+if [[ "${!cc_variable}" -ef "${shim_realpath:?}" ]]; then
+  export "$cc_variable"=""
+fi
+
 if [[ -z "$NO_CCACHE" ]]; then
   ccache="$(which ccache)"
 else
