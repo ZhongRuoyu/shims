@@ -33,7 +33,8 @@ else
   ccache=""
 fi
 
-if [[ -n "${!cc_variable}" ]] && echo "${!cc_variable}" | grep -Eq '^/'; then
+if [[ -n "${!cc_variable}" ]] &&
+  builtin echo "${!cc_variable}" | grep -Eq '^/'; then
   exec $ccache "${!cc_variable}" "$@"
 fi
 
